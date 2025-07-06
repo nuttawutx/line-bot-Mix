@@ -16,13 +16,13 @@ import pytz
 
 load_dotenv()
 
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN1")
-LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
+LINE_CHANNEL_ACCESS_TOKEN_1 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN_1")
+LINE_CHANNEL_SECRET_1 = os.getenv("LINE_CHANNEL_SECRET_1")
 GOOGLE_CREDENTIAL_BASE64 = os.getenv("GOOGLE_CREDENTIAL_BASE64")
 
 app = Flask(__name__)
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_1)
+handler = WebhookHandler(LINE_CHANNEL_SECRET_1)
 
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
@@ -180,13 +180,13 @@ import pytz
 
 load_dotenv()
 
-LINE_CHANNEL_ACCESS_TOKEN2 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN2")
-LINE_CHANNEL_SECRET2 = os.getenv("LINE_CHANNEL_SECRET2")
+LINE_CHANNEL_ACCESS_TOKEN_2 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN_2")
+LINE_CHANNEL_SECRET_2 = os.getenv("LINE_CHANNEL_SECRET_2")
 GOOGLE_CREDENTIAL_BASE64 = os.getenv("GOOGLE_CREDENTIAL_BASE64")
 
 app = Flask(__name__)
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN2)
-handler = WebhookHandler(LINE_CHANNEL_SECRET2)
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_2)
+handler = WebhookHandler(LINE_CHANNEL_SECRET_2)
 
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
