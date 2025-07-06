@@ -33,8 +33,8 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_name(cred_path, scope)
 client = gspread.authorize(creds)
 
-@app.route("/callback", methods=['POST'])
-def callback():
+@app.route("/callback1", methods=['POST'])
+def callback1():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
@@ -197,8 +197,8 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_name(cred_path, scope)
 client = gspread.authorize(creds)
 
-@app.route("/callback", methods=['POST'])
-def callback():
+@app.route("/callback2", methods=['POST'])
+def callback2():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
