@@ -8,7 +8,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials  # แทน oauth2client
 from dotenv import load_dotenv
 from datetime import datetime
 import pytz
@@ -25,7 +25,7 @@ if GOOGLE_CREDENTIAL_BASE64:
         f.write(base64.b64decode(GOOGLE_CREDENTIAL_BASE64).decode("utf-8"))
 
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(cred_path, scope)
+creds = Credentials.from_service_account_file(cred_path, scopes=scope)
 client = gspread.authorize(creds)
 
 app = Flask(__name__)
@@ -75,10 +75,17 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             event.reply_token,
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (DD-MM-YYYY)")
         )
+        return
     elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน"]:
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
+        )
+        return
+    elif not all(data[key] for key in expected_keys):
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="❌ ทุกบรรทัดต้องมีข้อมูล")
         )
         return
 
