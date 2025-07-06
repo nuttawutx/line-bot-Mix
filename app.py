@@ -183,7 +183,6 @@ load_dotenv()
 LINE_CHANNEL_ACCESS_TOKEN_2 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN_2")
 LINE_CHANNEL_SECRET_2 = os.getenv("LINE_CHANNEL_SECRET_2")
 
-app = Flask(__name__)
 line_bot_api2 = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_2)
 handler2 = WebhookHandler(LINE_CHANNEL_SECRET_2)
 
