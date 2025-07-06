@@ -163,22 +163,6 @@ if __name__ == "__main__":
 
 
 # === Bot 2 (Mikka - HR_EmployeeListMikka) ===
-import os
-import json
-import base64
-import re
-from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from dotenv import load_dotenv
-from datetime import datetime
-import pytz
-
-
-load_dotenv()
 
 LINE_CHANNEL_ACCESS_TOKEN_2 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN_2")
 LINE_CHANNEL_SECRET_2 = os.getenv("LINE_CHANNEL_SECRET_2")
