@@ -30,7 +30,8 @@ client = gspread.authorize(creds)
 
 app = Flask(__name__)
 
-def register_employee(event, line_bot_api, worksheet_name, spreadsheet_name, webhook_env_var, default_code, prefix=""):
+def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, default_code, prefix=""):
+
     if not SYSTEM_ACTIVE:
         line_bot_api.reply_message(
             event.reply_token,
