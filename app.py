@@ -21,8 +21,8 @@ LINE_CHANNEL_SECRET_1 = os.getenv("LINE_CHANNEL_SECRET_1")
 GOOGLE_CREDENTIAL_BASE64 = os.getenv("GOOGLE_CREDENTIAL_BASE64")
 
 app = Flask(__name__)
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_1)
-handler = WebhookHandler(LINE_CHANNEL_SECRET_1)
+line_bot_api1 = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_1)
+handler1 = WebhookHandler(LINE_CHANNEL_SECRET_1)
 
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
@@ -38,17 +38,17 @@ def callback1():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
-        handler.handle(body, signature)
+        handler1.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
     return 'OK'
 
 SYSTEM_ACTIVE = os.getenv("SYSTEM_ACTIVE", "true").lower() == "true"
 
-@handler.add(MessageEvent, message=TextMessage)
+@handler1.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     if not SYSTEM_ACTIVE:
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text="⚠️ ขณะนี้ระบบลงทะเบียนปิดให้บริการชั่วคราว\nโปรดลองใหม่อีกครั้งภายหลัง")
         )
@@ -59,7 +59,7 @@ def handle_message(event):
 
     lines = text.strip().splitlines()
     if len(lines) != 6:
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ ต้องกรอกข้อมูล 6 บรรทัดเท่านั้น:\nชื่อ:\nชื่อเล่น:\nสาขา:\nตำแหน่ง:\nเริ่มงาน (DD-MM-YYYY):\nประเภท:")
         )
@@ -69,7 +69,7 @@ def handle_message(event):
     data = {}
     for line in lines:
         if ":" not in line:
-            line_bot_api.reply_message(
+            line_bot_api1.reply_message(
                 event.reply_token,
                 TextSendMessage(text="❌ ทุกบรรทัดต้องมีเครื่องหมาย ':' เช่น ตำแหน่ง: เจ้าหน้าที่")
             )
@@ -79,14 +79,14 @@ def handle_message(event):
 
     if set(data.keys()) != expected_keys:
         missing = expected_keys - set(data.keys())
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text=f"❌ ขาดข้อมูล: {', '.join(missing)}")
         )
         return
 
     if not re.match(r'^\d{1,2}-\d{1,2}-\d{4}$', data["เริ่มงาน"]):
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (ต้องเป็น DD-MM-YYYY)")
         )
@@ -107,7 +107,7 @@ def handle_message(event):
             worksheet = client.open("HR_EmployeeList").worksheet("MonthlyEmployee")
             default_code = 20000
         else:
-            line_bot_api.reply_message(
+            line_bot_api1.reply_message(
                 event.reply_token,
                 TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
             )
@@ -146,13 +146,13 @@ def handle_message(event):
             f"วันเริ่มงาน: {start}\n"
             f"📌 โปรดแจ้งหัวหน้างาน/พนักงาน ล่วงหน้าก่อนเริ่มงาน"
         )
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text=confirmation_text)
         )
 
     except Exception as e:
-        line_bot_api.reply_message(
+        line_bot_api1.reply_message(
             event.reply_token,
             TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
         )
@@ -184,8 +184,8 @@ LINE_CHANNEL_ACCESS_TOKEN_2 = os.getenv("LINE_CHANNEL_ACCESS_TOKEN_2")
 LINE_CHANNEL_SECRET_2 = os.getenv("LINE_CHANNEL_SECRET_2")
 
 app = Flask(__name__)
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_2)
-handler = WebhookHandler(LINE_CHANNEL_SECRET_2)
+line_bot_api2 = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN_2)
+handler2 = WebhookHandler(LINE_CHANNEL_SECRET_2)
 
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
@@ -201,17 +201,17 @@ def callback2():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
-        handler.handle(body, signature)
+        handler2.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
     return 'OK'
 
 SYSTEM_ACTIVE = os.getenv("SYSTEM_ACTIVE", "true").lower() == "true"
 
-@handler.add(MessageEvent, message=TextMessage)
+@handler2.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     if not SYSTEM_ACTIVE:
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text="⚠️ ขณะนี้ระบบลงทะเบียนปิดให้บริการชั่วคราว\nโปรดลองใหม่อีกครั้งภายหลัง")
         )
@@ -222,7 +222,7 @@ def handle_message(event):
 
     lines = text.strip().splitlines()
     if len(lines) != 6:
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ ต้องกรอกข้อมูล 6 บรรทัดเท่านั้น:\nชื่อ:\nชื่อเล่น:\nสาขา:\nตำแหน่ง:\nเริ่มงาน (DD-MM-YYYY):\nประเภท:")
         )
@@ -232,7 +232,7 @@ def handle_message(event):
     data = {}
     for line in lines:
         if ":" not in line:
-            line_bot_api.reply_message(
+            line_bot_api2.reply_message(
                 event.reply_token,
                 TextSendMessage(text="❌ ทุกบรรทัดต้องมีเครื่องหมาย ':' เช่น ตำแหน่ง: เจ้าหน้าที่")
             )
@@ -242,14 +242,14 @@ def handle_message(event):
 
     if set(data.keys()) != expected_keys:
         missing = expected_keys - set(data.keys())
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text=f"❌ ขาดข้อมูล: {', '.join(missing)}")
         )
         return
 
     if not re.match(r'^\d{1,2}-\d{1,2}-\d{4}$', data["เริ่มงาน"]):
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (ต้องเป็น DD-MM-YYYY)")
         )
@@ -272,7 +272,7 @@ def handle_message(event):
             default_code = 60000
             prefix = ""
         else:
-            line_bot_api.reply_message(
+            line_bot_api2.reply_message(
                 event.reply_token,
                 TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
             )
@@ -317,13 +317,13 @@ def handle_message(event):
             f"วันเริ่มงาน: {start}\n"
             f"📌 โปรดแจ้งหัวหน้างาน/พนักงาน ล่วงหน้าก่อนเริ่มงาน"
         )
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text=confirmation_text)
         )
 
     except Exception as e:
-        line_bot_api.reply_message(
+        line_bot_api2.reply_message(
             event.reply_token,
             TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
         )
