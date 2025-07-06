@@ -63,12 +63,13 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         data[key.strip()] = val.strip()
 
     if set(data.keys()) != expected_keys:
-        if not all(data[key] for key in expected_keys):
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="❌ ทุกบรรทัดต้องมีข้อมูล")
-            )
-            return
+        missing = expected_keys - set(data.keys())
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f"❌ ขาดข้อมูล: {', '.join(missing)}")
+        )
+        return
+
     if not re.match(r'^\d{1,2}-\d{1,2}-\d{4}$', data["เริ่มงาน"]):
         line_bot_api.reply_message(
             event.reply_token,
@@ -79,6 +80,12 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
+        )
+        return
+    elif not all(data[key] for key in expected_keys):
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="❌ ทุกบรรทัดต้องมีข้อมูล")
         )
         return
 
