@@ -32,7 +32,7 @@ app = Flask(__name__)
 BOT_STATUS_SHEET = "BotStatus"
 BOT_STATUS_WORKSHEET = "Status"
 BOT_STATUS_CELL = "A2"
-admin_ids = ["YOUR_ADMIN_LINE_USER_ID"]  # <== เปลี่ยนเป็น userId ของแอดมิน
+admin_ids = ["Ud686f3b906ac18e081626f3c5910ddd8"]  # <== เปลี่ยนเป็น userId ของแอดมิน
 
 def get_system_status():
     sheet = client.open(BOT_STATUS_SHEET).worksheet(BOT_STATUS_WORKSHEET)
