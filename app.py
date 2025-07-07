@@ -17,8 +17,6 @@ import requests
 load_dotenv()
 
 GOOGLE_CREDENTIAL_BASE64 = os.getenv("GOOGLE_CREDENTIAL_BASE64")
-SYSTEM_ACTIVE = os.getenv("SYSTEM_ACTIVE", "true").lower() == "true"
-
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
     with open(cred_path, "w") as f:
@@ -30,9 +28,21 @@ client = gspread.authorize(creds)
 
 app = Flask(__name__)
 
-def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, default_code, prefix=""):
+# === ฟังก์ชันเปิด/ปิดระบบจาก Google Sheet ===
+def get_system_status():
+    sheet = client.open("BotStatus").worksheet("Status")
+    status = sheet.acell("A2").value.strip().lower()
+    return status == "on"
 
-    if not SYSTEM_ACTIVE:
+def set_system_status(active: bool):
+    sheet = client.open("BotStatus").worksheet("Status")
+    sheet.update("A2", "on" if active else "off")
+
+# === บัญชีแอดมินที่สามารถควบคุมระบบได้ ===
+admin_ids = ["Ud686f3b906ac18e081626f3c5910ddd8"]  # ใส่ userId ของแอดมินที่ควบคุมระบบได้
+
+def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, default_code, prefix=""):
+    if not get_system_status():
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="⚠️ ขณะนี้ระบบลงทะเบียนปิดให้บริการชั่วคราว\nโปรดลองใหม่อีกครั้ง")
@@ -145,6 +155,18 @@ def callback1():
 
 @handler1.add(MessageEvent, message=TextMessage)
 def handle_message1(event):
+    text = event.message.text.strip().lower()
+    user_id = event.source.user_id
+
+    if text == "เปิดระบบ" and user_id in admin_ids:
+        set_system_status(True)
+        line_bot_api1.reply_message(event.reply_token, TextSendMessage("✅ เปิดระบบเรียบร้อย"))
+        return
+    elif text == "ปิดระบบ" and user_id in admin_ids:
+        set_system_status(False)
+        line_bot_api1.reply_message(event.reply_token, TextSendMessage("🛑 ปิดระบบเรียบร้อย"))
+        return
+
     register_employee(event, line_bot_api1, "HR_EmployeeList", "APPS_SCRIPT_WEBHOOK1", default_code=90000)
 
 # === Bot 2 ===
