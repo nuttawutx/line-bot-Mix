@@ -193,7 +193,19 @@ def callback2():
 
 @handler2.add(MessageEvent, message=TextMessage)
 def handle_message2(event):
-    text = event.message.text.lower()
+    user_id = event.source.user_id
+    text = event.message.text.strip().lower()
+
+    if user_id in admin_ids:
+        if text == "ปิดระบบ":
+            set_system_status("off")
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
+            return
+        elif text == "เปิดระบบ":
+            set_system_status("on")
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
+            return
+
     is_daily = "รายวัน" in text
     register_employee(
         event,
