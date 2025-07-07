@@ -28,22 +28,25 @@ client = gspread.authorize(creds)
 
 app = Flask(__name__)
 
-# === ฟังก์ชันเปิด/ปิดระบบจาก Google Sheet ===
+# === เปิด/ปิดระบบจาก Google Sheet ===
+BOT_STATUS_SHEET = "BotStatus"
+BOT_STATUS_WORKSHEET = "Status"
+BOT_STATUS_CELL = "A2"
+admin_ids = ["YOUR_ADMIN_LINE_USER_ID"]  # <== เปลี่ยนเป็น userId ของแอดมิน
+
 def get_system_status():
-    sheet = client.open("BotStatus").worksheet("Status")
-    value = sheet.acell("A2").value
+    sheet = client.open(BOT_STATUS_SHEET).worksheet(BOT_STATUS_WORKSHEET)
+    value = sheet.acell(BOT_STATUS_CELL).value
     if value is None:
-        return False  # ปิดระบบโดยอัตโนมัติถ้าไม่มีค่า
+        return False
     return value.strip().lower() == "on"
 
-def set_system_status(active: bool):
-    sheet = client.open("BotStatus").worksheet("Status")
-    sheet.update("A2", "on" if active else "off")
-
-# === บัญชีแอดมินที่สามารถควบคุมระบบได้ ===
-admin_ids = ["Ud686f3b906ac18e081626f3c5910ddd8"]  # ใส่ userId ของแอดมินที่ควบคุมระบบได้
+def set_system_status(value):
+    sheet = client.open(BOT_STATUS_SHEET).worksheet(BOT_STATUS_WORKSHEET)
+    sheet.update_acell(BOT_STATUS_CELL, value.lower())
 
 def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, default_code, prefix=""):
+
     if not get_system_status():
         line_bot_api.reply_message(
             event.reply_token,
@@ -157,17 +160,18 @@ def callback1():
 
 @handler1.add(MessageEvent, message=TextMessage)
 def handle_message1(event):
-    text = event.message.text.strip().lower()
     user_id = event.source.user_id
+    text = event.message.text.strip().lower()
 
-    if text == "เปิดระบบ" and user_id in admin_ids:
-        set_system_status(True)
-        line_bot_api1.reply_message(event.reply_token, TextSendMessage("✅ เปิดระบบเรียบร้อย"))
-        return
-    elif text == "ปิดระบบ" and user_id in admin_ids:
-        set_system_status(False)
-        line_bot_api1.reply_message(event.reply_token, TextSendMessage("🛑 ปิดระบบเรียบร้อย"))
-        return
+    if user_id in admin_ids:
+        if text == "ปิดระบบ":
+            set_system_status("off")
+            line_bot_api1.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
+            return
+        elif text == "เปิดระบบ":
+            set_system_status("on")
+            line_bot_api1.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
+            return
 
     register_employee(event, line_bot_api1, "HR_EmployeeList", "APPS_SCRIPT_WEBHOOK1", default_code=90000)
 
