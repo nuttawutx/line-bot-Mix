@@ -31,8 +31,10 @@ app = Flask(__name__)
 # === ฟังก์ชันเปิด/ปิดระบบจาก Google Sheet ===
 def get_system_status():
     sheet = client.open("BotStatus").worksheet("Status")
-    status = sheet.acell("A2").value.strip().lower()
-    return status == "on"
+    value = sheet.acell("A2").value
+    if value is None:
+        return False  # ปิดระบบโดยอัตโนมัติถ้าไม่มีค่า
+    return value.strip().lower() == "on"
 
 def set_system_status(active: bool):
     sheet = client.open("BotStatus").worksheet("Status")
