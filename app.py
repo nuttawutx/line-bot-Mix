@@ -199,11 +199,11 @@ def handle_message2(event):
     if user_id in admin_ids:
         if text == "ปิดระบบ":
             set_system_status("off")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย.."))
             return
         elif text == "เปิดระบบ":
             set_system_status("on")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย..."))
             return
 
     is_daily = "รายวัน" in text
