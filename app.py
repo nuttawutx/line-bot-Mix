@@ -17,6 +17,8 @@ import requests
 load_dotenv()
 
 GOOGLE_CREDENTIAL_BASE64 = os.getenv("GOOGLE_CREDENTIAL_BASE64")
+SYSTEM_ACTIVE = os.getenv("SYSTEM_ACTIVE", "true").lower() == "true"
+
 cred_path = "google-credentials.json"
 if GOOGLE_CREDENTIAL_BASE64:
     with open(cred_path, "w") as f:
@@ -28,26 +30,9 @@ client = gspread.authorize(creds)
 
 app = Flask(__name__)
 
-# === เปิด/ปิดระบบจาก Google Sheet ===
-BOT_STATUS_SHEET = "BotStatus"
-BOT_STATUS_WORKSHEET = "Status"
-BOT_STATUS_CELL = "A2"
-admin_ids = ["Ud686f3b906ac18e081626f3c5910ddd8"]  # <== เปลี่ยนเป็น userId ของแอดมิน
-
-def get_system_status():
-    sheet = client.open(BOT_STATUS_SHEET).worksheet(BOT_STATUS_WORKSHEET)
-    value = sheet.acell(BOT_STATUS_CELL).value
-    if value is None:
-        return False
-    return value.strip().lower() == "on"
-
-def set_system_status(value):
-    sheet = client.open(BOT_STATUS_SHEET).worksheet(BOT_STATUS_WORKSHEET)
-    sheet.update_acell(BOT_STATUS_CELL, value.lower())
-
 def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, default_code, prefix=""):
 
-    if not get_system_status():
+    if not SYSTEM_ACTIVE:
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="⚠️ ขณะนี้ระบบลงทะเบียนปิดให้บริการชั่วคราว\nโปรดลองใหม่อีกครั้ง")
@@ -160,19 +145,6 @@ def callback1():
 
 @handler1.add(MessageEvent, message=TextMessage)
 def handle_message1(event):
-    user_id = event.source.user_id
-    text = event.message.text.strip().lower()
-
-    if user_id in admin_ids:
-        if text == "ปิดระบบ":
-            set_system_status("off")
-            line_bot_api1.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
-            return
-        elif text == "เปิดระบบ":
-            set_system_status("on")
-            line_bot_api1.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
-            return
-
     register_employee(event, line_bot_api1, "HR_EmployeeList", "APPS_SCRIPT_WEBHOOK1", default_code=90000)
 
 # === Bot 2 ===
@@ -193,19 +165,7 @@ def callback2():
 
 @handler2.add(MessageEvent, message=TextMessage)
 def handle_message2(event):
-    user_id = event.source.user_id
-    text = event.message.text.strip().lower()
-
-    if user_id in admin_ids:
-        if text == "ปิดระบบ":
-            set_system_status("off")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
-            return
-        elif text == "เปิดระบบ":
-            set_system_status("on")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
-            return
-
+    text = event.message.text.lower()
     is_daily = "รายวัน" in text
     register_employee(
         event,
@@ -220,4 +180,3 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 # This code is a Flask application that integrates with LINE Messaging API and Google Sheets to register employees.
-# It allows users to register their information through LINE messages, and the data is stored in Google
