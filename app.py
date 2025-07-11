@@ -124,7 +124,6 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         webhook_url = os.getenv(webhook_env_var)
         if webhook_url:
             requests.post(webhook_url, json={"sheet": worksheet.title})
-        print(webhook_url)
 
         confirm_text = (
             f"✅ ลงทะเบียนสำเร็จ\n"
