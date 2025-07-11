@@ -112,15 +112,15 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         # ✅ ระบุ worksheet และค่าเริ่มต้นตามประเภท
         if emp_type == "รายวัน":
             worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee")
-            default_code = 20000
-            prefix = "P"
+            default_code = 90000
+            prefix = ""
         elif emp_type == "รายเดือน":
             worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployee")
-            default_code = 60000
+            default_code = 20000
             prefix = ""
         elif emp_type == "รายเดือน1":
             worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployeeWHLG")
-            default_code = 30000
+            default_code = 20000
             prefix = ""
         else:
             line_bot_api.reply_message(
