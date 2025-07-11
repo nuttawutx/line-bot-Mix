@@ -207,13 +207,30 @@ def handle_message2(event):
             return
 
     is_daily = "รายวัน" in text
+    is_monthly1 = "รายเดือน1" in text
+    
+    if is_monthly1:
+        register_employee(
+            event,
+            line_bot_api2,
+            "HR_EmployeeListMikka",
+            "APPS_SCRIPT_WEBHOOK2",
+            sheet_name="MonthlyEmployeeWHLG",
+            default_code=20000,
+            prefix=""
+        )
+        return
+    
     register_employee(
         event,
         line_bot_api2,
         "HR_EmployeeListMikka",
         "APPS_SCRIPT_WEBHOOK2",
+        spreadsheet_name="DailyEmployee" if is_daily else "MonthlyEmployee",
         default_code=20000 if is_daily else 60000,
         prefix="P" if is_daily else ""
+    
+        
     )
 
 if __name__ == "__main__":
