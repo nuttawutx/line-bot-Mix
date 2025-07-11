@@ -91,10 +91,10 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (DD-MM-YYYY)")
         )
         return
-    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน", "รายเดือน1"]:
+    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน"]:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน', 'รายเดือน' หรือ 'รายเดือน1' เท่านั้น")
+            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
         )
         return
     elif not all(data[key] for key in expected_keys):
@@ -108,26 +108,15 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         name, nickname = data["ชื่อ"], data["ชื่อเล่น"]
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
         emp_type = data["ประเภท"].strip().lower()
-
-        # ✅ ระบุ worksheet และค่าเริ่มต้นตามประเภท
+        # ✅ เลือก worksheet ตามประเภท
         if emp_type == "รายวัน":
-            worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee")
-            default_code = 90000
-            prefix = ""
-        elif emp_type == "รายเดือน":
-            worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployee")
-            default_code = 20000
-            prefix = ""
+            sheet_name = "DailyEmployee"
         elif emp_type == "รายเดือน1":
-            worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployeeWHLG")
-            default_code = 20000
-            prefix = ""
+            sheet_name = "MonthlyEmployeeWHLG"
         else:
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน', 'รายเดือน' หรือ 'รายเดือน1' เท่านั้น")
-            )
+            sheet_name = "MonthlyEmployee"
 
+        worksheet = client.open(spreadsheet_name).worksheet(sheet_name)
         last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
         raw_code = last_row[2] if len(last_row) >= 3 else ""
         number_part = int(re.sub(r'\D', '', raw_code)) if raw_code.isdigit() or raw_code else default_code
@@ -139,9 +128,14 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
 
         worksheet.append_row(["", branch, emp_code, name, nickname, postion, start, "", emp_type, user_id, now])
 
-        webhook_url = os.getenv(webhook_env_var)
+        # ✅ ส่ง Webhook แยกตามประเภท
+        if emp_type == "รายเดือน1":
+            webhook_url = os.getenv("APPS_SCRIPT_WEBHOOK_WHLG")
+        else:
+            webhook_url = os.getenv(webhook_env_var)
         if webhook_url:
             requests.post(webhook_url, json={"sheet": worksheet.title})
+
 
         confirm_text = (
             f"✅ ลงทะเบียนสำเร็จ\n"
@@ -150,14 +144,14 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             f"ตำแหน่ง: {postion}\n"
             f"สาขา: {branch}\n"
             f"เริ่มงาน: {start}\n"
-            f"📌 โปรดแจ้งหัวหน้างาน/พนักงาน ล่วงหน้าก่อนเริ่มงาน."
+            f"📌 โปรดแจ้งหัวหน้างาน/พนักงาน ล่วงหน้าก่อเริ่มงาน"
         )
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=confirm_text))
 
     except Exception as e:
         line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
+            event.reply_token,
+            TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
         )
 
 # === Bot 1 ===
@@ -217,11 +211,11 @@ def handle_message2(event):
     if user_id in admin_ids:
         if text == "ปิดระบบ":
             set_system_status("off")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย.."))
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="❌ ปิดระบบเรียบร้อย"))
             return
         elif text == "เปิดระบบ":
             set_system_status("on")
-            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย..."))
+            line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
             return
 
     is_daily = "รายวัน" in text
@@ -237,3 +231,5 @@ def handle_message2(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+# This code is a Flask application that integrates with LINE Messaging API and Google Sheets to register employees.
+# It allows users to register their information through LINE messages, and the data is stored in Google
