@@ -109,7 +109,7 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
         emp_type = data["ประเภท"].strip().lower()
 
-        worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee" if emp_type == "รายวัน" else "MonthlyEmployee")
+        worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee" if emp_type == "รายวัน" else "MonthlyEmployee" if emp_type == "รายเดือน" else "MonthlyEmployeeWHLG")
         last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
         raw_code = last_row[2] if len(last_row) >= 3 else ""
         number_part = int(re.sub(r'\D', '', raw_code)) if raw_code.isdigit() or raw_code else default_code
