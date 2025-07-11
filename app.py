@@ -236,7 +236,6 @@ def handle_message2(event):
             "HR_EmployeeListMikka",
             "APPS_SCRIPT_WEBHOOK2",
             default_code=20000,
-            sheet_name = "EmployeeWHLG"
         )
     elif "รายวัน" in text:
         register_employee(
