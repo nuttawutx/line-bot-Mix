@@ -110,8 +110,8 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         emp_type = data["ประเภท"].strip().lower()    
         # ✅ เลือกชื่อชีต
         sheet_name = (
-            "MonthlyEmployeeWHLG" if emp_type == "รายเดือน1"
-            else "DailyEmployee" if emp_type == "รายวัน"
+            "EmployeeWHLG" if emp_type == "รายเดือน1"
+            else "DailyEmployee" if emp_type == "รายวัน" 
             else "MonthlyEmployee"
         )
 
@@ -236,6 +236,7 @@ def handle_message2(event):
             "HR_EmployeeListMikka",
             "APPS_SCRIPT_WEBHOOK2",
             default_code=20000,
+            sheet_name = "EmployeeWHLG"
         )
     elif "รายวัน" in text:
         register_employee(
