@@ -91,10 +91,10 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (DD-MM-YYYY)")
         )
         return
-    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน", "รายเดือน1"]:
+    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน"]:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' หรือ 'รายเดือน1' เท่านั้น")
+            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
         )
         return
     elif not all(data[key] for key in expected_keys):
@@ -107,24 +107,30 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
     try:
         name, nickname = data["ชื่อ"], data["ชื่อเล่น"]
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
-        emp_type = data["ประเภท"].strip().lower()    
-        # ✅ เลือกชื่อชีต
-        sheet_name = (
-            "EmployeeWHLG" if emp_type == "รายเดือน1"
-            else "DailyEmployee" if emp_type == "รายวัน" 
-            else "MonthlyEmployee"
-        )
+        emp_type = data["ประเภท"].strip().lower()
 
-        worksheet = client.open(spreadsheet_name).worksheet(sheet_name)
-        print("✅ Opened worksheet:", sheet_name)
+        # ✅ ระบุ worksheet และค่าเริ่มต้นตามประเภท
+        if emp_type == "รายวัน":
+            worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee")
+            default_code = 20000
+            prefix = "P"
+        elif emp_type == "รายเดือน":
+            worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployee")
+            default_code = 60000
+            prefix = ""
+        elif emp_type == "รายเดือน1":
+            worksheet = client.open(spreadsheet_name).worksheet("MonthlyEmployeeWHLG")
+            default_code = 30000
+            prefix = ""
+        else:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน', 'รายเดือน' หรือ 'รายเดือน1' เท่านั้น")
+            )
 
-        # ✅ ดึงข้อมูลแถวสุดท้าย ถ้ามี
-        rows = worksheet.get_all_values()
-        print("📋 Row count:", len(rows))
-
-        last_row = rows[-1] if len(rows) > 1 else []
+        last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
         raw_code = last_row[2] if len(last_row) >= 3 else ""
-        number_part = int(re.sub(r'\D', '', raw_code)) if raw_code and re.search(r'\d', raw_code) else default_code
+        number_part = int(re.sub(r'\D', '', raw_code)) if raw_code.isdigit() or raw_code else default_code
 
         new_code = number_part + 1
         emp_code = prefix + str(new_code)
@@ -132,20 +138,11 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         now = datetime.now(pytz.timezone('Asia/Bangkok')).strftime("%d/%m/%Y %H:%M")
 
         worksheet.append_row(["", branch, emp_code, name, nickname, postion, start, "", emp_type, user_id, now])
-        print("✅ Added row for", emp_code)
 
-        # ✅ ส่ง Webhook (พร้อม log)
-        try:
-            webhook_url = os.getenv(webhook_env_var)
-            print("📡 Webhook URL:", webhook_url)
-            if webhook_url:
-                payload = {"sheet": worksheet.title}
-                res = requests.post(webhook_url, json=payload)
-                print("✅ Webhook POST:", res.status_code, res.text)
-        except Exception as we:
-            print("❌ Webhook error:", str(we))
+        webhook_url = os.getenv(webhook_env_var)
+        if webhook_url:
+            requests.post(webhook_url, json={"sheet": worksheet.title})
 
-        # ✅ ตอบกลับผู้ใช้
         confirm_text = (
             f"✅ ลงทะเบียนสำเร็จ\n"
             f"รหัส: {emp_code}\n"
@@ -158,10 +155,9 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=confirm_text))
 
     except Exception as e:
-        print("❌ ERROR in register_employee:", str(e))
         line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
+        event.reply_token,
+        TextSendMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")
         )
 
 # === Bot 1 ===
@@ -228,33 +224,15 @@ def handle_message2(event):
             line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย..."))
             return
 
-    if "รายเดือน1" in text:
-        # กรณีรายเดือน1 ใช้ Sheet พิเศษ
-        register_employee(
-            event,
-            line_bot_api2,
-            "HR_EmployeeListMikka",
-            "APPS_SCRIPT_WEBHOOK2",
-            default_code=20000,
-        )
-    elif "รายวัน" in text:
-        register_employee(
-            event,
-            line_bot_api2,
-            "HR_EmployeeListMikka",
-            "APPS_SCRIPT_WEBHOOK2",
-            default_code=2000,
-            prefix="P"
-        )
-    else:
-        # กรณีอื่นถือว่าเป็นรายเดือนธรรมดา
-        register_employee(
-            event,
-            line_bot_api2,
-            "HR_EmployeeListMikka",
-            "APPS_SCRIPT_WEBHOOK2",
-            default_code=60000
-        )
+    is_daily = "รายวัน" in text
+    register_employee(
+        event,
+        line_bot_api2,
+        "HR_EmployeeListMikka",
+        "APPS_SCRIPT_WEBHOOK2",
+        default_code=20000 if is_daily else 60000,
+        prefix="P" if is_daily else ""
+    )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
