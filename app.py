@@ -91,10 +91,10 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (DD-MM-YYYY)")
         )
         return
-    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน", "รายเดือน1"]:
+    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน"]:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' หรือ 'รายเดือน1' เท่านั้น")
+            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
         )
         return
     elif not all(data[key] for key in expected_keys):
@@ -108,15 +108,8 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         name, nickname = data["ชื่อ"], data["ชื่อเล่น"]
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
         emp_type = data["ประเภท"].strip().lower()
-        # ✅ เลือก worksheet ตามประเภท
-        if emp_type == "รายวัน":
-            sheet_name = "DailyEmployee"
-        elif emp_type == "รายเดือน1":
-            sheet_name = "MonthlyEmployeeWHLG"
-        else:
-            sheet_name = "MonthlyEmployee"
 
-        worksheet = client.open(spreadsheet_name).worksheet(sheet_name)
+        worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee" if emp_type == "รายวัน" else "MonthlyEmployee")
         last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
         raw_code = last_row[2] if len(last_row) >= 3 else ""
         number_part = int(re.sub(r'\D', '', raw_code)) if raw_code.isdigit() or raw_code else default_code
@@ -128,14 +121,9 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
 
         worksheet.append_row(["", branch, emp_code, name, nickname, postion, start, "", emp_type, user_id, now])
 
-        # ✅ ส่ง Webhook แยกตามประเภท
-        if emp_type == "รายเดือน1":
-            webhook_url = os.getenv("APPS_SCRIPT_WEBHOOK_WHLG")
-        else:
-            webhook_url = os.getenv(webhook_env_var)
+        webhook_url = os.getenv(webhook_env_var)
         if webhook_url:
             requests.post(webhook_url, json={"sheet": worksheet.title})
-
 
         confirm_text = (
             f"✅ ลงทะเบียนสำเร็จ\n"
@@ -226,15 +214,6 @@ def handle_message2(event):
         "APPS_SCRIPT_WEBHOOK2",
         default_code=20000 if is_daily else 60000,
         prefix="P" if is_daily else ""
-    )
-    is_Monthly = "รายเดือน1" in text
-    register_employee(
-        event,
-        line_bot_api2,
-        "HR_EmployeeListMikka",
-        "APPS_SCRIPT_WEBHOOK_WHLG",
-        default_code=20000 if is_Monthly else 60000,
-        prefix="" if is_Monthly else ""
     )
 
 if __name__ == "__main__":
