@@ -213,7 +213,8 @@ def handle_message2(event):
             line_bot_api2,
             "HR_EmployeeListMikka",
             "APPS_SCRIPT_WEBHOOK2",
-            default_code=20000
+            default_code=20000,
+            sheet_name="MonthlyEmployeeWHLG"
         )
     elif "รายวัน" in text:
         register_employee(
