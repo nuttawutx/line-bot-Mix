@@ -212,7 +212,7 @@ def handle_message2(event):
         line_bot_api2,
         "HR_EmployeeListMikka",
         "APPS_SCRIPT_WEBHOOK2",
-        default_code=20000 if is_daily else 60000,
+        default_code=2000 if is_daily else 60000,
         prefix="P" if is_daily else ""
     )
 
