@@ -97,6 +97,7 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน', 'รายเดือน', หรือ 'รายเดือน1' เท่านั้น")
         )
         return
+    
     elif not all(data[key] for key in expected_keys):
         line_bot_api.reply_message(
             event.reply_token,
@@ -206,30 +207,17 @@ def handle_message2(event):
             line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
             return
         
-        if "รายวัน" in text:
-            register_employee(
-                event,
-                line_bot_api2,
-                "HR_EmployeeListMikka",
-                "APPS_SCRIPT_WEBHOOK2",
-                default_code=2000,
-                prefix="P"
-            )
-        elif "รายเดือน1" in text:
-            register_employee(
-                event,
-                line_bot_api2,
-                "HR_EmployeeListMikka",
-                "APPS_SCRIPT_WEBHOOK2",
-                default_code=20000
-            )
-        elif "รายเดือน" in text:
-            register_employee(
-                event,
-                line_bot_api2,
-                "HR_EmployeeListMikka",
-                "APPS_SCRIPT_WEBHOOK2",
-                default_code=60000
+        register_employee(
+        event,
+        line_bot_api2,
+        "HR_EmployeeListMikka",
+        "APPS_SCRIPT_WEBHOOK2",
+        default_code=(
+            2000 if "รายวัน" in text else
+            20000 if "รายเดือน1" in text else
+            60000
+        ),
+        prefix="P" if "รายวัน" in text else ""
     )
 
 if __name__ == "__main__":
