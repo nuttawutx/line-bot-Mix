@@ -206,26 +206,31 @@ def handle_message2(event):
             line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
             return
         
-    text = event.message.text.strip().lower()
-    emp_config = {
-    "รายวัน": {"default_code": 2000, "prefix": "P"},
-    "รายเดือน1": {"default_code": 20000},
-    "รายเดือน": {"default_code": 60000}
-    }
-
-    for emp_type in emp_config:
-        if emp_type in text:
-            cfg = emp_config[emp_type]
+        if "รายวัน" in text:
             register_employee(
-            event,
-            line_bot_api2,
-            "HR_EmployeeListMikka",
-            "APPS_SCRIPT_WEBHOOK2",
-            default_code=cfg["default_code"],
-            prefix=cfg.get("prefix", "")
-        )
-        break
-
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=2000,
+                prefix="P"
+            )
+        elif "รายเดือน1" in text:
+            register_employee(
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=20000
+            )
+        elif "รายเดือน" in text:
+            register_employee(
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=60000
+            )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
