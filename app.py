@@ -223,7 +223,6 @@ def handle_message2(event):
         "HR_EmployeeListMikka",
         "APPS_SCRIPT_WEBHOOK2",
         default_code=20000 if is_monthly else 60000,
-        prefix="" if is_monthly else ""
     )
 
 if __name__ == "__main__":
