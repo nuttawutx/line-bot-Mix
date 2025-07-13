@@ -109,13 +109,13 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
         emp_type = data["ประเภท"].strip().lower()
 
-        sheet_map = {
-            "รายเดือน": "MonthlyEmployee",
-            "รายเดือน1": "MonthlyEmployeeWHLG",
-            "รายวัน": "DailyEmployee"
-        }
+        if emp_type == "รายเดือน":
+            sheet_name = "MonthlyEmployee"
+        elif emp_type == "รายเดือน1":
+            sheet_name = "MonthlyEmployeeWHLG"
+        else:
+            sheet_name = "DailyEmployee"
 
-        sheet_name = sheet_map.get(emp_type, "DailyEmployee")
         worksheet = client.open(spreadsheet_name).worksheet(sheet_name)
 
         last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
@@ -218,7 +218,7 @@ def handle_message2(event):
     "รายวัน": {"default_code": 2000, "prefix": "P"},
     "รายเดือน1": {"default_code": 20000},
     "รายเดือน": {"default_code": 60000}
-}
+    }
 
     for emp_type in emp_config:
         if emp_type in text:
