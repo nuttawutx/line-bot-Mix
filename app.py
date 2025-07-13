@@ -91,10 +91,10 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
             TextSendMessage(text="❌ รูปแบบวันเริ่มงานไม่ถูกต้อง (DD-MM-YYYY)")
         )
         return
-    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน"]:
+    elif data["ประเภท"].strip().lower() not in ["รายวัน", "รายเดือน", "รายเดือน1"]:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน' หรือ 'รายเดือน' เท่านั้น")
+            TextSendMessage(text="❌ ประเภทต้องเป็น 'รายวัน', 'รายเดือน', หรือ 'รายเดือน1' เท่านั้น")
         )
         return
     elif not all(data[key] for key in expected_keys):
@@ -109,7 +109,7 @@ def register_employee(event, line_bot_api, spreadsheet_name, webhook_env_var, de
         branch, postion, start = data["สาขา"], data["ตำแหน่ง"], data["เริ่มงาน"]
         emp_type = data["ประเภท"].strip().lower()
 
-        worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee" if emp_type == "รายวัน" else "MonthlyEmployee")
+        worksheet = client.open(spreadsheet_name).worksheet("DailyEmployee" if emp_type == "รายวัน" else "MonthlyEmployee" if emp_type == "รายเดือน" else "MonthlyEmployeeWHLG")
         last_row = worksheet.get_all_values()[-1] if len(worksheet.get_all_values()) > 1 else []
         raw_code = last_row[2] if len(last_row) >= 3 else ""
         number_part = int(re.sub(r'\D', '', raw_code)) if raw_code.isdigit() or raw_code else default_code
@@ -205,15 +205,31 @@ def handle_message2(event):
             set_system_status("on")
             line_bot_api2.reply_message(event.reply_token, TextSendMessage(text="✅ เปิดระบบเรียบร้อย"))
             return
-
-    is_daily = "รายวัน" in text
-    register_employee(
-        event,
-        line_bot_api2,
-        "HR_EmployeeListMikka",
-        "APPS_SCRIPT_WEBHOOK2",
-        default_code=20000 if is_daily else 60000,
-        prefix="P" if is_daily else ""
+        
+        if "รายวัน" in text:
+            register_employee(
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=2000,
+                prefix="P"
+            )
+        elif "รายเดือน1" in text:
+            register_employee(
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=20000
+            )
+        elif "รายเดือน" in text:
+            register_employee(
+                event,
+                line_bot_api2,
+                "HR_EmployeeListMikka",
+                "APPS_SCRIPT_WEBHOOK2",
+                default_code=60000
     )
 
 if __name__ == "__main__":
